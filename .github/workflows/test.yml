@@ -30,7 +30,7 @@ env:
   REGISTRY_USERNAME: aliyun9681285594
   NAMESPACE: wootile-public
   IMAGE: action-learn
-  TAG: ${{ github.sha }}
+  # TAG: ${{ github.sha }}
   ACK_CLUSTER_ID: cf0b015f6e1964fbb90883987a0dbcd23
   ACK_DEPLOYMENT_NAME: nginx-deployment
 
@@ -52,6 +52,16 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Set short git commit SHA
+      id: vars
+      run: |
+        calculatedSha=$(git rev-parse --short ${{ github.sha }})
+        echo "::set-output name=short_sha::$calculatedSha"
+
+    - name: Confirm git commit SHA output
+      run: echo ${{ steps.vars.outputs.short_sha }}
+
+
     # 1.1 Login to ACR
     - name: Login to ACR with the AccessKey pair
       uses: aliyun/acr-login@v1
@@ -62,6 +72,8 @@ jobs:
 
     # 1.2 Buid and push image to ACR
     - name: Build and push image to ACR
+      env:
+        TAG: ${{ steps.vars.outputs.short_sha }}
       run: |
         docker build --tag "$REGISTRY/$NAMESPACE/$IMAGE:$TAG" .
         docker push "$REGISTRY/$NAMESPACE/$IMAGE:$TAG"
@@ -74,7 +86,7 @@ jobs:
         access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
         access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
         repository: "${{ env.NAMESPACE }}/${{ env.IMAGE }}"
-        tag: "${{ env.TAG }}"
+        tag: "${{ steps.vars.outputs.short_sha }}"
 
     # # 2.1 (Optional) Login to ACR EE
     # - uses: actions/checkout@v3
