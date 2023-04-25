@@ -26,7 +26,7 @@ on:
 # Environment variables available to all jobs and steps in this workflow.
 env:
   REGION_ID: cn-hangzhou
-  REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  REGISTRY: registry-vpc.cn-hangzhou.aliyuncs.com
   REGISTRY_USERNAME: aliyun9681285594
   NAMESPACE: wootile-public
   IMAGE: action-learn
@@ -56,10 +56,10 @@ jobs:
       id: vars
       run: |
         calculatedSha=$(git rev-parse --short ${{ github.sha }})
-        echo "::set-output name=short_sha::$calculatedSha"
+        echo "short_sha=$calculatedSha" >> $GITHUB_ENV
 
     - name: Confirm git commit SHA output
-      run: echo ${{ steps.vars.outputs.short_sha }}
+      run: echo ${{ env.short_sha }}
 
 
     # 1.1 Login to ACR
@@ -73,7 +73,7 @@ jobs:
     # 1.2 Buid and push image to ACR
     - name: Build and push image to ACR
       env:
-        TAG: ${{ steps.vars.outputs.short_sha }}
+        TAG: ${{ env.short_sha }}
       run: |
         docker build --tag "$REGISTRY/$NAMESPACE/$IMAGE:$TAG" .
         docker push "$REGISTRY/$NAMESPACE/$IMAGE:$TAG"
@@ -86,7 +86,7 @@ jobs:
         access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
         access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
         repository: "${{ env.NAMESPACE }}/${{ env.IMAGE }}"
-        tag: "${{ steps.vars.outputs.short_sha }}"
+        tag: "${{ env.short_sha }}"
 
     # # 2.1 (Optional) Login to ACR EE
     # - uses: actions/checkout@v3
