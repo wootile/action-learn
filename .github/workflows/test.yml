@@ -26,11 +26,11 @@ on:
 # Environment variables available to all jobs and steps in this workflow.
 env:
   REGION_ID: cn-hangzhou
-  REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  REGISTRY: registry-vpc.cn-hangzhou.aliyuncs.com
   NAMESPACE: wootile-public
   IMAGE: action-learn
   TAG: ${{ github.sha }}
-  ACK_CLUSTER_ID: clusterID
+  ACK_CLUSTER_ID: cf0b015f6e1964fbb90883987a0dbcd23
   ACK_DEPLOYMENT_NAME: nginx-deployment
 
   # ACR_EE_REGISTRY: myregistry.cn-hangzhou.cr.aliyuncs.com
@@ -51,13 +51,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # # 1.1 Login to ACR
-    # - name: Login to ACR with the AccessKey pair
-    #   uses: aliyun/acr-login@v1
-    #   with:
-    #     region-id: "${{ env.REGION_ID }}"
-    #     access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
-    #     access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
+    # 1.1 Login to ACR
+    - name: Login to ACR with the AccessKey pair
+      uses: aliyun/acr-login@v1
+      with:
+        region-id: "${{ env.REGION_ID }}"
+        access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
+        access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
 
     # 1.2 Buid and push image to ACR
     - name: Build and push image to ACR
@@ -102,13 +102,13 @@ jobs:
     #     repository: "${{ env.ACR_EE_NAMESPACE}}/${{ env.ACR_EE_IMAGE }}"
     #     tag: "${{ env.ACR_EE_TAG }}"
 
-    # # 3.1 Set ACK context
-    # - name: Set K8s context
-    #   uses: aliyun/ack-set-context@v1
-    #   with:
-    #     access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
-    #     access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
-    #     cluster-id: "${{ env.ACK_CLUSTER_ID }}"
+    # 3.1 Set ACK context
+    - name: Set K8s context
+      uses: aliyun/ack-set-context@v1
+      with:
+        access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
+        access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
+        cluster-id: "${{ env.ACK_CLUSTER_ID }}"
 
     # # 3.2 Deploy the image to the ACK cluster
     # - name: Set up Kustomize
@@ -120,3 +120,8 @@ jobs:
     #     ./kustomize build . | kubectl apply -f -
     #     kubectl rollout status deployment/$ACK_DEPLOYMENT_NAME
     #     kubectl get services -o wide
+    - name: Deploy
+      run: |-
+        kubectl cluster-info
+        kubectl get services -o wide
+        kubectl get node -o wide
