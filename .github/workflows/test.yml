@@ -26,7 +26,7 @@ on:
 # Environment variables available to all jobs and steps in this workflow.
 env:
   REGION_ID: cn-hangzhou
-  REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  REGISTRY: registry-vpc.cn-hangzhou.aliyuncs.com
   REGISTRY_USERNAME: aliyun9681285594
   NAMESPACE: wootile-public
   IMAGE: action-learn
@@ -52,20 +52,13 @@ jobs:
         calculatedSha=$(git rev-parse --short ${{ github.sha }})
         echo "short_sha=$calculatedSha" >> $GITHUB_ENV
 
-    - name: Confirm git commit SHA output
-      run: echo ${{ env.short_sha }}
-
-
     # 1.1 Login to ACR
-    - name: Login to ACR with the AccessKey pair
+    - name: Login to ACR with the username
       uses: aliyun/acr-login@v1
       with:
-        region-id: "${{ env.REGION_ID }}"
-        access-key-id: "${{ secrets.ACCESS_KEY_ID }}"
-        access-key-secret: "${{ secrets.ACCESS_KEY_SECRET }}"
         login-server: "${{ env.REGISTRY }}"
-        # username: "${{ env.REGISTRY_USERNAME }}"
-        # password: "${{ secrets.REGISTRY_PASSWORD }}"
+        username: "${{ env.REGISTRY_USERNAME }}"
+        password: "${{ secrets.REGISTRY_PASSWORD }}"
 
     # 1.2 Buid and push image to ACR
     - name: Build and push image to ACR
@@ -94,19 +87,9 @@ jobs:
         cluster-id: "${{ env.ACK_CLUSTER_ID }}"
 
     # # 3.2 Deploy the image to the ACK cluster
-    # - name: Set up Kustomize
-    #   run: |-
-    #     curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash /dev/stdin 3.8.6
-    # - name: Deploy
-    #   run: |-
-    #     ./kustomize edit set image REGISTRY/NAMESPACE/IMAGE:TAG=$REGISTRY/$NAMESPACE/$IMAGE:$TAG
-    #     ./kustomize build . | kubectl apply -f -
-    #     kubectl rollout status deployment/$ACK_DEPLOYMENT_NAME
-    #     kubectl get services -o wide
     - name: Deploy
       env:
         TAG: ${{ env.short_sha }}
       run: |-
         kubectl cluster-info
         kubectl set image deployment/$ACK_DEPLOYMENT_NAME action-learn=$REGISTRY/$NAMESPACE/$IMAGE:$TAG
-        ls -la
