@@ -136,5 +136,5 @@ jobs:
     - name: Deploy
       run: |-
         kubectl cluster-info
-        kubectl get services -o wide
-        kubectl get node -o wide
+        kubectl set image deployment/action-learn action-learn=$REGISTRY/$NAMESPACE/$IMAGE:$TAG
+        helm list
