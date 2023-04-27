@@ -92,4 +92,5 @@ jobs:
         TAG: ${{ env.short_sha }}
       run: |-
         kubectl cluster-info
-        kubectl set image deployment/$ACK_DEPLOYMENT_NAME action-learn=$REGISTRY/$NAMESPACE/$IMAGE:$TAG
+        helm upgrade --install action-learn ./deploy/charts --set image.tag=$TAG
+        # kubectl set image deployment/$ACK_DEPLOYMENT_NAME action-learn=$REGISTRY/$NAMESPACE/$IMAGE:$TAG

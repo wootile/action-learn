@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: registry.cn-hangzhou.aliyuncs.com/wootile-public/action-learn
+  repository: registry-vpc.cn-hangzhou.aliyuncs.com/wootile-public/action-learn
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
